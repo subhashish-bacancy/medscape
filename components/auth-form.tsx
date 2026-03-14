@@ -1,18 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type AuthMode = "login" | "register";
 
-export function AuthForm() {
+export function AuthForm({
+  initialSuccessMessage,
+}: {
+  initialSuccessMessage?: string | null;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    initialSuccessMessage ?? null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
@@ -42,7 +49,7 @@ export function AuthForm() {
       });
 
       const data = (await response.json().catch(() => null)) as
-        | { error?: string }
+        | { error?: string; message?: string }
         | null;
 
       if (!response.ok) {
@@ -60,7 +67,9 @@ export function AuthForm() {
       setMode("login");
       setName("");
       setPassword("");
-      setSuccessMessage("Account created. Please log in.");
+      setSuccessMessage(
+        data?.message ?? "Account created. Please verify your email before logging in.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -129,6 +138,17 @@ export function AuthForm() {
             value={password}
           />
         </label>
+
+        {mode === "login" ? (
+          <div className="-mt-1 text-right text-sm">
+            <Link
+              className="font-medium text-[var(--brand)] transition hover:text-[var(--brand-dark)]"
+              href="/forgot-password"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+        ) : null}
 
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-[var(--danger)]">

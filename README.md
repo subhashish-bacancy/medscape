@@ -5,6 +5,8 @@ Production-ready healthcare compliance training platform built with Next.js App 
 ## Features
 
 - Email/password registration and login
+- Supabase email verification (required for non-admin users)
+- Forgot password + secure reset link flow via Supabase Auth
 - Training module listing and detail page
 - Quiz flow with automatic scoring
 - Progress tracking per user and module
@@ -67,6 +69,8 @@ npm run dev
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
 - `GET /api/modules`
 - `GET /api/modules/[id]`
 - `GET /api/quiz/[moduleId]`

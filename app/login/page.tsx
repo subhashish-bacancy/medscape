@@ -2,11 +2,33 @@ import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth-form";
 import { getCurrentUser } from "@/lib/auth";
 
-export default async function LoginPage() {
+type LoginPageSearchParams = {
+  verified?: string;
+  reset?: string;
+  reset_email?: string;
+};
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<LoginPageSearchParams>;
+}) {
   const user = await getCurrentUser();
 
   if (user) {
     redirect("/dashboard");
+  }
+
+  const params = await searchParams;
+
+  let initialSuccessMessage: string | null = null;
+
+  if (params.verified === "1") {
+    initialSuccessMessage = "Email verified. You can now log in.";
+  } else if (params.reset_email === "sent") {
+    initialSuccessMessage = "Password reset email sent. Please check your inbox.";
+  } else if (params.reset === "success") {
+    initialSuccessMessage = "Password reset successful. Please log in with your new password.";
   }
 
   return (
@@ -14,7 +36,7 @@ export default async function LoginPage() {
       <div className="grid w-full max-w-6xl gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
         <section className="space-y-8">
           <div className="inline-flex rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 font-mono text-xs uppercase tracking-[0.35em] text-[var(--brand)] shadow-sm">
-           MedScape
+            MedScape
           </div>
 
           <div className="max-w-2xl">
@@ -48,7 +70,7 @@ export default async function LoginPage() {
         </section>
 
         <div className="flex justify-center lg:justify-end">
-          <AuthForm />
+          <AuthForm initialSuccessMessage={initialSuccessMessage} />
         </div>
       </div>
     </div>
