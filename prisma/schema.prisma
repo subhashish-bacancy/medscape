@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id                Int                @id @default(autoincrement())
+  name              String
+  email             String             @unique
+  password          String
+  profileImageUrl   String?
+  role              UserRole           @default(USER)
+  isDisabled        Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  progresses        Progress[]
+  certificates      Certificate[]
+  programCertificate ProgramCertificate?
+  trainingProgress  TrainingProgress[]
+  auditLogs         AuditLog[]
+}
+
+model TrainingModule {
+  id                Int                @id @default(autoincrement())
+  title             String
+  description       String
+  videoUrl          String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  quizzes           Quiz[]
+  progresses        Progress[]
+  certificates      Certificate[]
+  trainingProgress  TrainingProgress[]
+}
+
+model Quiz {
+  id            Int            @id @default(autoincrement())
+  moduleId      Int
+  question      String
+  options       String
+  correctAnswer String
+  module        TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+}
+
+model Progress {
+  id        Int            @id @default(autoincrement())
+  userId    Int
+  moduleId  Int
+  completed Boolean        @default(false)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module    TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model Certificate {
+  id        Int            @id @default(autoincrement())
+  userId    Int
+  moduleId  Int
+  issuedAt  DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module    TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model ProgramCertificate {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @unique
+  courseName String
+  issuedAt   DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum TrainingProgressStatus {
+  not_started
+  in_progress
+  completed
+}
+
+model TrainingProgress {
+  id               Int                    @id @default(autoincrement())
+  userId           Int
+  moduleId         Int
+  startedAt        DateTime?
+  completedAt      DateTime?
+  score            Int?
+  attempts         Int                    @default(0)
+  timeSpentMinutes Int                    @default(0)
+  status           TrainingProgressStatus @default(not_started)
+  user             User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module           TrainingModule         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  action     String
+  entityType String
+  entityId   Int
+  metadata   Json?
+  timestamp  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
