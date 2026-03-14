@@ -23,11 +23,14 @@ function getServiceRoleKey() {
 }
 
 function getPublicAuthKey() {
-  return (
-    process.env.SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    getServiceRoleKey()
-  );
+  const key =
+    process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!key) {
+    throw new Error("SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY must be configured.");
+  }
+
+  return key;
 }
 
 const baseAuthConfig = {
