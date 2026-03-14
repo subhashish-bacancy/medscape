@@ -18,6 +18,24 @@ type QuizResult = {
   certificateUrl: string | null;
 };
 
+const QUIZ_OPTION_LABELS = ["A", "B", "C", "D", "E", "F"];
+
+function getOptionPresentation(option: string, index: number) {
+  const labeledMatch = option.match(/^([A-F])\s+(.+)$/);
+
+  if (labeledMatch) {
+    return {
+      key: labeledMatch[1],
+      text: labeledMatch[2],
+    };
+  }
+
+  return {
+    key: QUIZ_OPTION_LABELS[index] ?? String(index + 1),
+    text: option,
+  };
+}
+
 export function QuizForm({
   moduleId,
   moduleTitle,
@@ -89,23 +107,24 @@ export function QuizForm({
           {questions.map((question, index) => (
             <section
               key={question.id}
-              className="rounded-[1.5rem] border border-[var(--border)] bg-[#faf7f1] p-5"
+              className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5"
             >
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--brand)]">
                 Question {index + 1}
               </p>
-              <h2 className="mt-2 text-xl font-semibold tracking-tight">
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-[var(--foreground)]">
                 {question.question}
               </h2>
 
               <div className="mt-4 grid gap-3">
-                {question.options.map((option) => {
-                  const optionKey = option.split(" ")[0];
+                {question.options.map((option, optionIndex) => {
+                  const presentation = getOptionPresentation(option, optionIndex);
+                  const optionKey = presentation.key;
                   const isSelected = answers[String(question.id)] === optionKey;
 
                   return (
                     <label
-                      key={option}
+                      key={`${question.id}-${optionKey}`}
                       className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
                         isSelected
                           ? "border-[var(--brand)] bg-[var(--brand)]/8"
@@ -125,7 +144,9 @@ export function QuizForm({
                         type="radio"
                         value={optionKey}
                       />
-                      <span className="text-sm font-medium">{option}</span>
+                      <span className="text-sm font-medium text-[var(--foreground)]">
+                        {presentation.text}
+                      </span>
                     </label>
                   );
                 })}
